@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>SURVIVOR REALM — MULTIPLAYER</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=Rajdhani:wght@300;400;600;700&display=swap');
+* { margin:0; padding:0; box-sizing:border-box; }
+body { background:#000; overflow:hidden; font-family:'Rajdhani',sans-serif; cursor:none; }
+canvas { display:block; }
+#lobby {
+  position:fixed; inset:0; display:flex; align-items:center; justify-content:center;
+  background:radial-gradient(ellipse at 50% 40%,#0a1628 0%,#050810 100%); z-index:100;
+}
+#lobby.hidden { display:none; }
+.box {
+  background:linear-gradient(160deg,#0d1e36 0%,#060f1e 100%);
+  border:1px solid #1a3a5a; border-radius:16px; padding:46px 52px;
+  min-width:460px; max-width:520px;
+  box-shadow:0 0 60px #0a3a6a44,0 0 120px #0a2a4a22; position:relative; overflow:hidden;
+}
+.box::before {
+  content:''; position:absolute; inset:0; pointer-events:none;
+  background:repeating-linear-gradient(90deg,transparent,transparent 59px,#1a3a5a11 60px),
+             repeating-linear-gradient(0deg,transparent,transparent 59px,#1a3a5a11 60px);
+}
+.title { font-family:'Cinzel',serif; font-size:34px; font-weight:900; color:#fff;
+  text-align:center; text-shadow:0 0 28px #4adeff,0 0 60px #4adeff44;
+  letter-spacing:4px; margin-bottom:3px; }
+.sub { font-size:12px; color:#4adeff88; text-align:center; letter-spacing:3px; margin-bottom:32px; }
+label { display:block; font-size:11px; letter-spacing:2px; color:#4adeff66; margin-bottom:6px; text-transform:uppercase; }
+.inp { width:100%; padding:11px 14px; background:#060f1e; border:1.5px solid #1a3a5a; border-radius:8px;
+  color:#fff; font-family:'Rajdhani'; font-size:16px; letter-spacing:1px; outline:none; transition:border-color .2s; margin-bottom:18px; }
+.inp:focus { border-color:#4adeff66; }
+.code-inp { font-family:'Cinzel'; font-size:20px; letter-spacing:5px; text-transform:uppercase; }
+.btn { display:block; width:100%; padding:13px; border-radius:8px; font-family:'Rajdhani';
+  font-size:17px; font-weight:700; letter-spacing:2px; cursor:pointer; background:transparent;
+  transition:all .15s; border:1.5px solid currentColor; }
+.btn:hover { transform:translateY(-1px); }
+.btn-blue  { color:#4adeff; } .btn-blue:hover  { background:#4adeff18; box-shadow:0 0 18px #4adeff44; }
+.btn-green { color:#44ff88; } .btn-green:hover { background:#44ff8818; box-shadow:0 0 18px #44ff8844; }
+.btn-gray  { color:#6898b8; } .btn-gray:hover  { background:#6898b811; }
+.btn:disabled { opacity:.4; cursor:not-allowed; transform:none; }
+.row { display:flex; gap:10px; } .row .btn { width:auto; padding:11px 18px; white-space:nowrap; }
+.divider { display:flex; align-items:center; gap:12px; margin:18px 0; color:#1a3a5a; font-size:11px; letter-spacing:2px; }
+.divider::before,.divider::after { content:''; flex:1; height:1px; background:#1a3a5a; }
+.code-box { background:#060f1e; border:1.5px solid #4adeff33; border-radius:10px;
+  padding:13px; text-align:center; margin-bottom:14px; display:none; }
+.code-box.show { display:block; }
+.code-lbl { font-size:10px; letter-spacing:2px; color:#4adeff66; margin-bottom:4px; }
+.code-val { font-family:'Cinzel'; font-size:28px; font-weight:700; color:#4adeff;
+  letter-spacing:8px; text-shadow:0 0 20px #4adeff88; }
+.copy { font-size:11px; color:#2a5a7a; margin-top:4px; cursor:pointer; }
+.copy:hover { color:#4adeff; }
+#player-list { margin-top:18px; display:none; }
+.list-lbl { font-size:10px; letter-spacing:2px; color:#4adeff66; margin-bottom:7px; }
+.pill { display:inline-block; padding:4px 11px; border-radius:20px; font-size:12px; letter-spacing:1px; margin:3px; border:1px solid; }
+#start-wrap { display:none; margin-top:16px; }
+.status { text-align:center; font-size:14px; letter-spacing:1px; min-height:22px; margin-top:12px; }
+.ok { color:#44ff88; } .err { color:#ff4444; } .wait { color:#ffaa44; }
+/* solo badge tag inside the section divider */
+.solo-note { font-size:10px; color:#44ff8855; letter-spacing:1px; text-align:center; margin-top:-10px; margin-bottom:14px; }
+</style>
+</head>
+<body>
+<div id="lobby">
+  <div class="box">
+    <div class="title">SURVIVOR</div>
+    <div class="sub">REALM · MULTIPLAYER</div>
+
+    <label>Your Callsign</label>
+    <input class="inp" id="pname" type="text" maxlength="16" placeholder="Enter name…" autocomplete="off">
+
+    <!-- ── SOLO ─────────────────────────────── -->
+    <button class="btn btn-green" id="btn-solo">🎮  PLAY SOLO</button>
+    <p class="solo-note">no connection needed · local play only</p>
+
+    <div class="divider">MULTIPLAYER</div>
+
+    <!-- ── HOST ─────────────────────────────── -->
+    <button class="btn btn-blue" id="btn-host">⚡  HOST NEW GAME</button>
+    <div class="code-box" id="code-box">
+      <div class="code-lbl">ROOM CODE — SHARE THIS</div>
+      <div class="code-val" id="code-val">——</div>
+      <div class="copy" id="copy-btn">📋 click to copy</div>
+    </div>
+
+    <div class="divider">OR JOIN</div>
+
+    <!-- ── JOIN ─────────────────────────────── -->
+    <label>Room Code</label>
+    <div class="row">
+      <input class="inp code-inp" id="join-code" type="text" maxlength="6" placeholder="XXXXXX" autocomplete="off">
+      <button class="btn btn-gray" id="btn-join">JOIN →</button>
+    </div>
+
+    <div id="player-list">
+      <div class="list-lbl">PLAYERS IN LOBBY</div>
+      <div id="pills"></div>
+    </div>
+    <div id="start-wrap">
+      <button class="btn btn-blue" id="btn-start">▶  START GAME</button>
+    </div>
+    <div class="status" id="status"></div>
+  </div>
+</div>
+
+<canvas id="game"></canvas>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/peerjs/1.5.2/peerjs.min.js"></script>
+<script type="module" src="main.js"></script>
+</body>
+</html>

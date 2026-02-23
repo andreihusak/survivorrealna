@@ -1,0 +1,31 @@
+/* ═══════════════════════════════════════════════
+   style.css — All visual styling
+   Fonts, body, canvas, future UI overlays
+   ═══════════════════════════════════════════════ */
+
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=Rajdhani:wght@300;400;600;700&display=swap');
+
+*, *::before, *::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  background: #000;
+  overflow: hidden;
+  font-family: 'Rajdhani', sans-serif;
+  cursor: none;
+  user-select: none;
+}
+
+canvas {
+  display: block;
+  position: fixed;
+  top: 0; left: 0;
+}
+
+/*
+  Add CSS for future UI overlays here.
+  e.g. inventory panel, settings screen, etc.
+*/
